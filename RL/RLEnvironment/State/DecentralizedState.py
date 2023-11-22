@@ -46,8 +46,9 @@ class DeCentralizedState(State):
     @property
     def tower_capacity_before_time_out_step_service(self):
         return self._tower_capacity_before_time_out_step_service
+
     @tower_capacity_before_time_out_step_service.setter
-    def tower_capacity_before_time_out_step_service(self,value):
+    def tower_capacity_before_time_out_step_service(self, value):
         self._tower_capacity_before_time_out_step_service = value
 
     @property
@@ -138,8 +139,6 @@ class DeCentralizedState(State):
     def power_of_requests(self, value):
         self._power_of_requests = value
 
-
-
     @property
     def index_service(self):
         return self._index_service
@@ -147,7 +146,6 @@ class DeCentralizedState(State):
     @index_service.setter
     def index_service(self, value):
         self._index_service = value
-
 
     @property
     def state_value_decentralize(self):
@@ -227,15 +225,26 @@ class DeCentralizedState(State):
         self._from_wait_to_serve_over_simulation = 0
         self._delay_time = 0
         self.number_of_timed_out_requests_from_algorithm = 0
+
     def calculate_state(self, outlet_max_len):
         final_state = []
-        # final_state.append((self.max_tower_capacity / self.max_tower_capacity) * 100)
         final_state.append(self.remaining_time_out)
-        final_state.append(round(((self._tower_capacity / self.max_tower_capacity) * 100), 2))
-        final_state.append(round(((self.power_of_requests / self.max_tower_capacity) * 100), 2))
-        final_state.append(round(((self.waiting_buffer_len / outlet_max_len) * 100), 2))
-        # final_state.append(self._tower_capacity_before_time_out_step_service )
+        cap = ((self._tower_capacity / self.max_tower_capacity) * 100)
+        if cap >= 100:
+            cap = 100.0
+        else:
+            cap = ((self._tower_capacity / self.max_tower_capacity) * 100)
 
+        buf = ((self.waiting_buffer_len / outlet_max_len) * 100)
+        if buf >= 100:
+            buf = 100.0
+        else:
+            buf = ((self.waiting_buffer_len / outlet_max_len) * 100)
+        final_state.append(round(cap, 2))
+        final_state.append(round(((self.power_of_requests / self.max_tower_capacity) * 100), 2))
+        final_state.append(round(buf, 2))
+
+        # final_state.append(self._tower_capacity_before_time_out_step_service )
         # final_state.append(self._time_out_flag)
 
         if len(final_state) == 0:

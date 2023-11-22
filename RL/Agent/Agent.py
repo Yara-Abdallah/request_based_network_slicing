@@ -132,16 +132,21 @@ class Agent(AbstractAgent):
         #                  len(self.action0_negative_reward))
         batch_size = min(len(self.action1_positive_reward),len(self.action1_negative_reward),
                              len(self.action0_negative_reward))
-        if batch_size > 25 :
-            batch_size =  25
+        if batch_size > 20:
+            batch_size = 20
         minibatch_action1_positive_reward = random.sample(self.action1_positive_reward, batch_size)
         minibatch_action1_negative_reward = random.sample(self.action1_negative_reward, batch_size)
         minibatch_action0_negative_reward = random.sample(self.action0_negative_reward, batch_size)
+        # print("len of minibatch_action1_positive_reward  : ",len(minibatch_action1_positive_reward))
+        # print("len of minibatch_action1_negative_reward  :  ",len(minibatch_action1_negative_reward))
+        # print("len of minibatch_action0_negative_reward  :  ", len (minibatch_action0_negative_reward ))
         self.minibatch.extend(minibatch_action1_positive_reward)
         self.minibatch.extend(minibatch_action0_negative_reward)
         self.minibatch.extend(minibatch_action1_negative_reward)
         # self.minibatch = random.sample(self.memory, batch_size)
         target = 0
+        # print("len : >>>>>>>>>>>>>>>>>>>>>>>>>     ", len(self.minibatch))
+        # print(self.minibatch)
         for exploitation, state, action, reward, next_state, prob in self.minibatch:
             target = reward
             if next_state is not None:
@@ -155,8 +160,9 @@ class Agent(AbstractAgent):
             target_f[0][action] = target
             self.data_for_grid_search.append([state,target_f])
             model.fit(state, target_f, epochs=1, verbose=0)
-        if self.epsilon > self.min_epsilon:
-            self.epsilon -= self.epsilon * self.epsilon_decay
+        # print("memory >>>>>>>>>>>>>>>>>>>>>>>>     ",self.minibatch)
+        # if self.epsilon > self.min_epsilon:
+        #     self.epsilon -= self.epsilon * self.epsilon_decay
         return target
 
     def hard_update_target_network(self, step, model, target_model):

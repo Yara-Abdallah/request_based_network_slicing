@@ -88,11 +88,19 @@ class PerformanceLogger(metaclass=SingletonMeta):
         self.set_outlet_services_ensured_number(outlet, [0, 0, 0])
         self.set_number_of_requested_requests_buffer(outlet, 0)
 
+
+
         if outlet not in self.queue_requests_with_execution_time_buffer:
-            self.queue_requests_with_execution_time_buffer[outlet] = dict()
+            self._queue_requests_with_execution_time_buffer[outlet]= dict()
+
+        elif outlet in self.queue_requests_with_execution_time_buffer:
+            self._queue_requests_with_execution_time_buffer[outlet].clear()
 
         if outlet not in self.queue_requests_with_time_out_buffer:
-            self.queue_requests_with_time_out_buffer[outlet] = dict()
+            self._queue_requests_with_time_out_buffer[outlet] = dict()
+
+        elif outlet in self.queue_requests_with_time_out_buffer:
+            self._queue_requests_with_time_out_buffer[outlet].clear()
     @property
     def accepted(self):
         return self._accepted
@@ -334,9 +342,9 @@ class PerformanceLogger(metaclass=SingletonMeta):
         for key in self._queue_waiting_requests_in_buffer:
             self._queue_waiting_requests_in_buffer[key] = deque([])
         for key in self._queue_requests_with_execution_time_buffer:
-            self._queue_requests_with_execution_time_buffer[key] = dict()
+            self._queue_requests_with_execution_time_buffer[key].clear()
         for key in self._queue_requests_with_time_out_buffer:
-            self._queue_requests_with_time_out_buffer[key] = dict()
+            self._queue_requests_with_time_out_buffer[key].clear()
         for key in self._outlet_services_requested_number:
             self._outlet_services_requested_number[key] = [0, 0, 0]
         for key in self._outlet_services_ensured_number:

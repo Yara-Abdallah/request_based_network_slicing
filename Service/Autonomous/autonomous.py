@@ -20,7 +20,7 @@ class FactoryAutonomous(Service):
 
     def calculate_processing_time(self):
         # self._network_latency + self._task_complexity
-        return np.random.choice(np.arange(12,15))
+        return np.random.choice(np.arange(10,12))
     def calculate_time_out(self):
-        return np.random.choice(np.arange(3,50))
+        return np.random.choice(np.arange(3,40))
 

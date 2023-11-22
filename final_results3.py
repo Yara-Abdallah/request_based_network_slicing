@@ -8,11 +8,12 @@ import pandas as pd
 
 outlet_name = ['wifi','3G','4G','5G']
 method_name =  ['rl' , 'fifo' ,'heuristic']
-outlet_num = 0
+outlet_num = 2
 
 folders = [os.path.join(sys.path[0], f'results//{method_name[outlet_num]}_wifi'), os.path.join(sys.path[0], f'results//{method_name[outlet_num]}_3G'), os.path.join(sys.path[0], f'results//{method_name[outlet_num]}_4G'),
            os.path.join(sys.path[0], f'results//{method_name[outlet_num]}_5G')]
 day_name=["day_one","day_wo"]
+
 rows_to_extract = [
     'AcceptedRequests',
     'GeneratedRequests',
@@ -22,7 +23,6 @@ rows_to_extract = [
     'AverageDelayed',
     'ServingRatio',
     'overall throughput',
-
 ]
 
 import os

@@ -3,14 +3,16 @@ import pickle
 import sys
 
 outlet_num = 0
-results_dir = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_2_retrain//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
+results_dir = os.path.join(sys.path[0],f"action_each_single_request_reward2_method2_repeat_periods_each_episode_retrain_buffer_percentage_small_time_out_add_flag_small_state_my_reward_failure//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
 results_dir2 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_3//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
 results_dir3 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_4//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
 results_dir4 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_5//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
 results_dir5 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_6//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
 results_dir6 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_7//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
-results_dir7 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_explore_exploit//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
-results_dir8 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_exploit//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
+results_dir7 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_8//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
+results_dir8 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_9//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
+results_dir9 = os.path.join(sys.path[0],f"fair_memory_selection_0.5_m0.5_m1_10//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl")
+
 
 
 # filename  = f"C://Users//Windows dunya//Downloads//action_each_single_request_reward2_method2_repeat_periods_each_episode_retrain_buffer_percentage_small_time_out_add_flag_small_state_my_reward_failure//reward_accumilated_decentralize//accu_reward{outlet_num}.pkl"
@@ -82,6 +84,16 @@ with open(results_dir8, 'rb') as file:
     except EOFError:
         pass
 
+
+with open(results_dir9, 'rb') as file:
+    try:
+        while True:
+            loaded_value = pickle.load(file)
+            deque.append(loaded_value)
+    except EOFError:
+        pass
+
+
 print(len(deque))
 for i in deque:
     print(i)
@@ -116,5 +128,5 @@ plt.ylabel('accu_reward_wifi')
 plt.legend()
 plt.title(f'Rolling Average Plot (window={window_size})')
 plt.grid(True)
-plt.savefig('accu_reward_wifi.svg', format='svg')
+plt.savefig('accu_reward_wifi_past.svg', format='svg')
 plt.show()

@@ -8,20 +8,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # path = 'C://Users//Windows dunya//PycharmProjects//pythonProject//my_reward_with_failure_{method_name[outlet_num]}}//{outlet_name[outlet_num]}}_small_time_out_add_flag_small_state_my_reward_failure_test_{method_name[outlet_num]}}.csv'
-# path2 = 'C://Users//Windows dunya//PycharmProjects//pythonProject//my_reward_with_failure_RL//{outlet_name[outlet_num]}}_small_time_out_rl_add_flag_small_state_my_reward_failure_testalloutlets.csv'
+# path2 = 'C://Users//Windows dunya//PycharmProjects//pythonProject//my_reward_with_failure_RL//{outlet_name[outlet_num]}}_small_time_out_heuristic_add_flag_small_state_my_reward_failure_testalloutlets.csv'
 # outlet outlet_number [0,1,2,3]
 outlet_name = ['wifi','3G','4G','5G']
 method_name =  ['rl' , 'fifo' ,'heuristic']
 outlet_num = 0
+method_num = 2
 
-results_dir_RL = os.path.join(sys.path[0],f"{outlet_name[outlet_num]}_testing_results_rl.csv")
-results_dir_other = os.path.join(sys.path[0],f"{outlet_name[outlet_num]}_testing_results_rl.csv")
+results_dir_RL = os.path.join(sys.path[0],f"{outlet_name[outlet_num]}_testing_results_heuristic.csv")
+results_dir_other = os.path.join(sys.path[0],f"{outlet_name[outlet_num]}_testing_results_heuristic.csv")
 
 # Create empty lists for each column
 accepted, served, wasting, wait_to_serve, time_out, generated_requests, delayed = [], [], [], [], [], [], []
 
 generated = []
-folder_name = [os.path.join(sys.path[0],f'results//rl_wifi//'),os.path.join(sys.path[0],f'results//rl_3G//'),os.path.join(sys.path[0],f'results//rl_4G//'),os.path.join(sys.path[0],f'results//rl_{outlet_name[outlet_num]}//')]
+folder_name = [os.path.join(sys.path[0],f'results//heuristic_wifi//'),os.path.join(sys.path[0],f'results//heuristic_3G//'),os.path.join(sys.path[0],f'results//heuristic_4G//'),os.path.join(sys.path[0],f'results//heuristic_{outlet_name[outlet_num]}//')]
 df2 = pd.read_csv(results_dir_RL)
 generated = df2['generated_requests_over_simulation']
 # Read the CSV file into a DataFrame
@@ -51,8 +52,6 @@ print(len(wasting))
 print(len(generated_requests))
 print(len(delayed))
 print(len(time_out))
-
-# Rest of your code...
 
 
 indices = [index for index, value in enumerate(accepted) if value == 1]
@@ -108,11 +107,11 @@ data_2={
 }
 
 df = pd.DataFrame(data_1)
-df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[outlet_num]}_data_delay_day_one.csv', index=False)
+df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[method_num]}_data_delay_day_one.csv', index=False)
 
 
 df = pd.DataFrame(data_2)
-df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[outlet_num]}_data_delay_day_two.csv', index=False)
+df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[method_num]}_data_delay_day_two.csv', index=False)
 # Create a dictionary with your variables
 data_vis = {
     'Metrics': ['AcceptedRequests', 'GeneratedRequests', 'ServedRequests', 'TimedOutRequests',
@@ -136,7 +135,7 @@ data2_vis = {
 
 
 df = pd.DataFrame(data_vis)
-df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[outlet_num]}_data_day_one.csv', index=False)
+df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[method_num]}_data_day_one.csv', index=False)
 # Create a bar plot of the data
 plt.figure(figsize=(10, 6))
 plt.bar(df['Metrics'], df['Day One'])
@@ -148,11 +147,11 @@ plt.title('Metrics for Day One', fontsize=12)  # Adjust the font size as needed
 plt.xticks(rotation=0, fontsize=6)  # Adjust the font size as needed
 
 # Save the plot as an SVG file
-plt.savefig(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[outlet_num]}_data_day_one.svg', format='svg', bbox_inches='tight')
+plt.savefig(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[method_num]}_data_day_one.svg', format='svg', bbox_inches='tight')
 
 # Create a DataFrame from the dictionary
 df = pd.DataFrame(data2_vis)
-df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[outlet_num]}_data_day_two.csv', index=False)
+df.to_csv(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[method_num]}_data_day_two.csv', index=False)
 # Create a bar plot of the data
 plt.figure(figsize=(10, 6))
 plt.bar(df['Metrics'], df['Day Two'])
@@ -164,5 +163,5 @@ plt.title('Metrics for Day Two', fontsize=12)  # Adjust the font size as needed
 plt.xticks(rotation=0, fontsize=6)  # Adjust the font size as needed
 
 # Save the plot as an SVG file
-plt.savefig(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[outlet_num]}_data_day_two.svg', format='svg', bbox_inches='tight')
+plt.savefig(f'{folder_name[0]}{outlet_name[outlet_num]}_{method_name[method_num]}_data_day_two.svg', format='svg', bbox_inches='tight')
 

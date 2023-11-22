@@ -229,6 +229,7 @@ def provisioning_time_services(outlets, performance_logger, time_step_simulation
             count = 0
             terminated_services = []
             for service, time in performance_logger.queue_requests_with_execution_time_buffer[outlet].items():
+                # print("inside provisioning : ",len(performance_logger.queue_requests_with_execution_time_buffer[outlet]))
                 start_time = time[0]
                 period_of_termination = time[1]
                 if start_time + period_of_termination == time_step_simulation:
@@ -309,6 +310,9 @@ def buffering_not_served_requests(outlets, performancelogger, time_step_simulati
                             outlet.dqn.environment.state.state_value_decentralize = outlet.dqn.environment.state.calculate_state(
                                 outlet.waited_buffer_max_length)
 
+                            # print("outlet.dqn.environment.state.state_value_decentralize time out : ",
+                            #       outlet.dqn.environment.state.state_value_decentralize)
+
                             services_timed_out.append(service)
                             performancelogger.queue_time_out_from_simulation[outlet].appendleft([service, True])
                             outlet.dqn.environment.state.time_out_requests_over_simulation = len(
@@ -318,8 +322,8 @@ def buffering_not_served_requests(outlets, performancelogger, time_step_simulati
 
                             outlet.dqn.environment.state.waiting_buffer_len = len(
                                 performancelogger.queue_waiting_requests_in_buffer[outlet]) - (
-                                                                                  len(services_timed_out)
-                                                                              )
+                                                                                  len(services_timed_out))
+
                             outlet.dqn.environment.state.timed_out_length = len(services_timed_out)
                             outlet.dqn.environment.state.from_waiting_to_serv_length = 0
                             outlet.dqn.environment.state.wasting_buffer_length = len(
@@ -343,15 +347,19 @@ def buffering_not_served_requests(outlets, performancelogger, time_step_simulati
                             logging_important_info_for_testing(performancelogger, outlet_index, outlet, satellite)
 
                             flag = 1
-                            outlet.dqn.agents.remember_decentralize(
-                                flag,
-                                outlet.dqn.environment.state.state_value_decentralize,
-                                outlet.dqn.agents.action.command.action_value_decentralize,
-                                outlet.dqn.environment.reward.reward_value,
-                                outlet.dqn.environment.state.next_state_decentralize,
-                                0.0
+                            if round(((len(performancelogger.queue_waiting_requests_in_buffer[
+                                               outlet]) / outlet.waited_buffer_max_length) * 100), 2) >= 80:
 
-                            )
+                                outlet.dqn.agents.remember_decentralize(
+                                    flag,
+                                    outlet.dqn.environment.state.state_value_decentralize,
+                                    outlet.dqn.agents.action.command.action_value_decentralize,
+                                    outlet.dqn.environment.reward.reward_value,
+                                    outlet.dqn.environment.state.next_state_decentralize,
+                                    0.0
+
+                                )
+
 
                         elif start_time + time_out > time_step_simulation and outlet.current_capacity >= service.service_power_allocate and len(
                                 performancelogger.queue_waiting_requests_in_buffer[outlet]) > 0:
@@ -390,6 +398,9 @@ def buffering_not_served_requests(outlets, performancelogger, time_step_simulati
                             outlet.dqn.environment.state.state_value_decentralize = outlet.dqn.environment.state.calculate_state(
                                 outlet.waited_buffer_max_length)
 
+                            # print("outlet.dqn.environment.state.state_value_decentralize wait to serve : ",
+                            #       outlet.dqn.environment.state.state_value_decentralize)
+
                             outlet.current_capacity = outlet.current_capacity - service.service_power_allocate
                             outlet.dqn.environment.state._tower_capacity = outlet.current_capacity
                             outlet.dqn.environment.state.waiting_buffer_len = len(
@@ -425,20 +436,21 @@ def buffering_not_served_requests(outlets, performancelogger, time_step_simulati
                             logging_important_info_for_testing(performancelogger, outlet_index, outlet, satellite)
 
                             flag = 1
-                            outlet.dqn.agents.remember_decentralize(
-                                flag,
-                                outlet.dqn.environment.state.state_value_decentralize,
-                                outlet.dqn.agents.action.command.action_value_decentralize,
-                                outlet.dqn.environment.reward.reward_value,
-                                outlet.dqn.environment.state.next_state_decentralize,
-                                0.0
-                            )
+                            if round(((len(performancelogger.queue_waiting_requests_in_buffer[
+                                              outlet]) / outlet.waited_buffer_max_length) * 100), 2) >= 80:
+                                outlet.dqn.agents.remember_decentralize(
+                                    flag,
+                                    outlet.dqn.environment.state.state_value_decentralize,
+                                    outlet.dqn.agents.action.command.action_value_decentralize,
+                                    outlet.dqn.environment.reward.reward_value,
+                                    outlet.dqn.environment.state.next_state_decentralize,
+                                    0.0
+                                )
 
             for ser in services_timed_out:
                 performancelogger.queue_waiting_requests_in_buffer[outlet].remove([ser, True])
 
             for ser in service_moved_to_served:
-                # if ser in performancelogger.queue_waiting_requests_in_buffer[outlet]:
                     performancelogger.queue_waiting_requests_in_buffer[outlet].remove([ser, True])
 
 
@@ -454,17 +466,16 @@ def choosing_abort_requests(performance_logger, outlet):
         if flag == True:
             timeout_durations.append(service.time_out)
             remaining_time_out_duration.append(service.remaining_time_out)
-    normalized_timeouts = [1 - (el2 / el1) for el1, el2 in zip(timeout_durations, remaining_time_out_duration)]
+
+    normalized_timeouts = [(1 - (el2 / el1)) if el2 != 0 else 0 for el1, el2 in zip(timeout_durations, remaining_time_out_duration) ]
     # Calculate the percent point function (inverse of the CDF)
     vals = beta.ppf(normalized_timeouts, alpha, beta_value)
     aborted_services = []
     for i, (service, flag) in enumerate(performance_logger.queue_waiting_requests_in_buffer[outlet]):
         if flag == True:
-            if vals[i] >= 0.15:
+            if vals[i] >= 0.35:
                 aborted_services.append(service)
     outlet.abort_requests += len(aborted_services)
-    # print("len of waited buffer : ", len(performance_logger.queue_waiting_requests_in_buffer[outlet]))
-    # print("number of aborted requests : ", len(aborted_services))
     for ser in aborted_services:
         performance_logger.queue_waiting_requests_in_buffer[outlet].remove([ser, True])
 
@@ -478,12 +489,10 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
                     service_index = service._dec_services_types_mapping[service.__class__.__name__]
                     # outlet.__class__.__name__ == 'Wifi'  and
                     if outlet.supported_services[service_index] == 1:
-                        if outlet.__class__.__name__ == 'Wifi' and len(
+                        if outlet.__class__.__name__ == 'Wifi'  and len(
                                 performance_logger.queue_waiting_requests_in_buffer[
                                     outlet]) < outlet.waited_buffer_max_length:
                             performance_logger.number_of_requested_requests_buffer[outlet] += 1
-                            # print("performance_logger.number_of_requested_requests_buffer[outlet] : ",
-                            #       performance_logger.number_of_requested_requests_buffer[outlet])
                             request_bandwidth = Bandwidth(service.bandwidth, service.criticality)
                             request_cost = RequestCost(request_bandwidth, service.realtime)
                             service.cost_in_bit_rate = request_cost.cost_setter(outlet)
@@ -515,12 +524,6 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
                             #         value = (value1, service.service_power_allocate, service.time_out,
                             #                  service.time_execution, start_time)
                             #         add_value_to_pickle(path, value)
-                            #
-                            # print("performance_logger.queue_requested_buffer[outlet] : ",
-                            #       performance_logger.queue_requested_buffer[outlet])
-                            # print("performance_logger.queue_ensured_buffer[outlet] : ",
-                            #       performance_logger.queue_ensured_buffer[outlet])
-                            # print(" performance_logger.queue_waiting_requests_in_buffer[outlet] : ",len(performance_logger.queue_waiting_requests_in_buffer[outlet]))
 
                             service.remaining_time_out = outlet.dqn.environment.state.remaining_time_out
                             outlet.dqn.environment.state.remaining_time_out = service.time_out
@@ -543,17 +546,28 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
                                 outlet.dqn.environment.state.number_of_timed_out_requests_from_algorithm += 1
 
                             if outlet.dqn.environment.state.time_out_flag == 0:
+                                outlet.dqn.environment.state.waiting_buffer_len = len(
+                                    performance_logger.queue_waiting_requests_in_buffer[outlet])
                                 outlet.dqn.environment.state.tower_capacity_before_time_out_step_service = service.tower_capacity_before_time_out_step
                                 outlet.dqn.environment.state.state_value_decentralize = outlet.dqn.environment.state.calculate_state(
                                     outlet.waited_buffer_max_length)
                                 lr = -1
+                                if round(((len(performance_logger.queue_waiting_requests_in_buffer[
+                                                  outlet]) / outlet.waited_buffer_max_length) * 100), 2) >= 80:
+                                    outlet.dqn.agents.action.command.action_value_decentralize = outlet.dqn.agents.chain_dec(
+                                        outlet.dqn.model, outlet.dqn.environment.state.state_value_decentralize,
+                                        outlet.dqn.agents.epsilon)
+                                    # print("the action inside  : >>>>>>>>>>>>>>>>>  ", outlet.dqn.agents.action.command.action_value_decentralize)
 
-                                outlet.dqn.agents.action.command.action_value_decentralize = outlet.dqn.agents.chain_dec(
-                                    outlet.dqn.model, outlet.dqn.environment.state.state_value_decentralize,
-                                    outlet.dqn.agents.epsilon)
+
+                                else:
+                                    outlet.dqn.agents.action.command.action_value_decentralize = 1
 
                                 action = outlet.dqn.agents.action.command.action_value_decentralize
                                 if action == 0:
+                                    # print("outlet.dqn.environment.state.state_value_decentralize reject : ",
+                                    #       outlet.dqn.environment.state.state_value_decentralize)
+
                                     outlet.dqn.environment.state._tower_capacity = outlet.current_capacity
                                     outlet.dqn.environment.state.power_of_requests = service.service_power_allocate
                                     outlet.dqn.environment.state.waiting_buffer_len = len(
@@ -570,8 +584,6 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
                                     outlet.dqn.environment.reward.rejected_reward += -0.5
                                     outlet.dqn.environment.reward.reward_value_accumilated = outlet.dqn.environment.reward.reward_value_accumilated + outlet.dqn.environment.reward.reward_value
                                     outlet.dqn.environment.state.timed_out_length = 0
-                                    outlet.dqn.environment.state.waiting_buffer_len = len(
-                                        performance_logger.queue_waiting_requests_in_buffer[outlet])
                                     outlet.dqn.environment.state.from_waiting_to_serv_length = 0
                                     outlet.dqn.environment.state.wasting_buffer_length = len(
                                         performance_logger.queue_wasted_req_buffer[outlet])
@@ -584,15 +596,18 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
 
                                     logging_important_info_for_testing(performance_logger, j, outlet, satellite)
                                     flag = 1
-                                    outlet.dqn.agents.remember_decentralize(
-                                        flag,
-                                        outlet.dqn.environment.state.state_value_decentralize,
-                                        outlet.dqn.agents.action.command.action_value_decentralize,
-                                        outlet.dqn.environment.reward.reward_value,
-                                        outlet.dqn.environment.state.next_state_decentralize,
-                                        0.0
+                                    if round(((len(performance_logger.queue_waiting_requests_in_buffer[
+                                                       outlet]) / outlet.waited_buffer_max_length) * 100), 2):
+                                        outlet.dqn.agents.remember_decentralize(
+                                            flag,
+                                            outlet.dqn.environment.state.state_value_decentralize,
+                                            outlet.dqn.agents.action.command.action_value_decentralize,
+                                            outlet.dqn.environment.reward.reward_value,
+                                            outlet.dqn.environment.state.next_state_decentralize,
+                                            0.0
 
-                                    )
+                                        )
+
 
                                     if len(info[0]) == 2:
                                         outlet2 = info[0][1]
@@ -630,6 +645,9 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
                                     served = serving_requests(performance_logger, outlet, start_time, service)
 
                                     if served == True:
+
+                                        # print("outlet.dqn.environment.state.state_value_decentralize serve : ",
+                                        #       outlet.dqn.environment.state.state_value_decentralize)
                                         outlet.dqn.environment.state._tower_capacity = outlet.current_capacity
                                         outlet.dqn.environment.state.power_of_requests = service.service_power_allocate
 
@@ -670,14 +688,17 @@ def request_reject_acceptance(car, performance_logger, gridcells_dqn, outlet, se
 
                                     logging_important_info_for_testing(performance_logger, j, outlet, satellite)
                                     flag = 1
-                                    outlet.dqn.agents.remember_decentralize(
-                                        flag,
-                                        outlet.dqn.environment.state.state_value_decentralize,
-                                        outlet.dqn.agents.action.command.action_value_decentralize,
-                                        outlet.dqn.environment.reward.reward_value,
-                                        outlet.dqn.environment.state.next_state_decentralize,
-                                        0.0
-                                    )
+                                    if round(((len(performance_logger.queue_waiting_requests_in_buffer[
+                                                       outlet]) / outlet.waited_buffer_max_length) * 100), 2):
+                                        outlet.dqn.agents.remember_decentralize(
+                                            flag,
+                                            outlet.dqn.environment.state.state_value_decentralize,
+                                            outlet.dqn.agents.action.command.action_value_decentralize,
+                                            outlet.dqn.environment.reward.reward_value,
+                                            outlet.dqn.environment.state.next_state_decentralize,
+                                            0.0
+                                        )
+
                                     if served == False:
                                         performance_logger.queue_waiting_requests_in_buffer[outlet].appendleft(
                                             [service, True])
